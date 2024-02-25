@@ -4,15 +4,6 @@ pragma solidity ^0.8.20;
 import "./IWizToken.sol";
 
 
-// interface IWizToken {
-
-//     function totalSupply() external view returns (uint);
-//     function transfer(address recipient, uint amount) external returns (bool);
-//     function balanceOf(address account) external view returns (uint);
-    
-//     event Transfer(address indexed from, address indexed to, uint value);
-
-// }
 contract WizardToken is IWizToken {
 
     string private name;
@@ -47,13 +38,6 @@ contract WizardToken is IWizToken {
         if (address(to) == address(0)) revert ADDRESS_ZERO_ERROR();
     }
 
-    function transfer(address to, uint amount) external returns (bool){
-        checker(to, amount);
-        savings[msg.sender] = savings[msg.sender] - (amount * calculateDecimals());
-        savings[to] = savings[to] + (amount * calculateDecimals());
-        return true;
-    }
-
     function balanceOf(address addr) external view returns (uint){
         return savings[addr];
     }
@@ -66,6 +50,13 @@ contract WizardToken is IWizToken {
         return 10 ** decimal;
     }
 
+    function transfer(address to, uint amount) external returns (bool){
+        checker(to, amount);
+        savings[msg.sender] = savings[msg.sender] - (amount * calculateDecimals());
+        savings[to] = savings[to] + (amount * calculateDecimals());
+        return true;
+    }
+
     function mint(uint amount) external {
         bool isOwner = onlyOwner();
         if (isOwner){
@@ -76,7 +67,7 @@ contract WizardToken is IWizToken {
     }
 
     function burn(uint amount) external {
-        require(savings[msg.sender] >= (amount * calculateDecimals()), "");
+        if (savings[msg.sender] < amount) revert INSUFFICIENT_AMOUNT_ERROR();
         savings[msg.sender] = savings[msg.sender] - (amount * calculateDecimals());
         _totalSupply = _totalSupply - (amount * calculateDecimals());
     }
